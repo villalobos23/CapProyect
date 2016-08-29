@@ -45,3 +45,9 @@ countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){
 extractFiles <- function(tarball){
   unzip(tarball,overwrite = TRUE)
 }
+
+#This is a file of aprox 500mb 
+downloadZipFile <- function(){
+  download.file(
+    "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip")
+}
