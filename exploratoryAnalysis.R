@@ -16,44 +16,53 @@ ngramsGist <- function(){#https://gist.github.com/benmarwick/5370329
   plot(tdm, terms = findFreqTerms(tdm, lowfreq = 2)[1:50], corThreshold = 0.5)
 }
 
-kaggleMultipleTokenizer <- function (){
-  data("crude")
-  ngramTokenizer = function(x) NGramTokenizer(x, Weka_control(min = 1, max = 3))
-  dtmH = DocumentTermMatrix(crude, control = list(tokenize = ngramTokenizer))
-  dtmH = removeSparseTerms(dtmH, 0.3)
-  dtmH = as.data.frame(as.matrix(dtmH))
-  dtmH
-}
-
 createCorpus <- function(texts){
   resultCorpus <- VCorpus(VectorSource(texts)) 
   resultCorpus
 }
 
-cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=FALSE){
-  cCorpus <- tm_map(dCorpus, removePunctuation)
-  cCorpus <- tm_map(dCorpus,removeNumbers)
-  
+cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE){
+  cCorpus <- dCorpus
   if(allLower){
-    cCorpus <- tm_map(cCorpus, tolower)
+    cCorpus <- tm_map(cCorpus, content_transformer(tolower))
   }
+  cCorpus <- tm_map(cCorpus, removePunctuation)
+  cCorpus <- tm_map(cCorpus,removeNumbers)
+  cCorpus <- tm_map(cCorpus,stripWhitespace)
+  removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
+  cCorpus <- tm_map(cCorpus, content_transformer(removeURL))
   if(removeSW)
     cCorpus <- tm_map(cCorpus,removeWords, stopwords("english"))
   cCorpus
 }
 
 stemCorpus <- function(sCorpus){
-  tm_map(sCorpus,)
+  corpus.temp <- tm_map(sCorpus,stemDocument,language="english",lazy=TRUE)
+  corpus.temp
 }
 
 createTermDocumentMatrix <- function(corpus,
                                      lowerN,
                                      upperN,
                                      removeSparse=TRUE,
-                                     sparsityTh = 0.5){
+                                     sparsityTh = 0.2){
   xGramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = lowerN, max = upperN))
-  tdm <- TermDocumentMatrix(crude, control = list(tokenize = xGramTokenizer))
+  tdm <- TermDocumentMatrix(corpus, control = list(tokenize = xGramTokenizer))
   if(removeSparse)
     tdm <- removeSparseTerms(tdm,sparsityTh)
   tdm
+}
+
+createFrequencyMatrix <- function(tdm){
+  freqs <- as.matrix(tdm)
+  freqs <- sort(rowSums(freqs),decreasing = T)
+  freqs <- data.frame(word = names(cfreqs),freq = freqs)
+  freqs
+}
+
+createFrequencyPlot <- function(fm){
+  p <- ggplot(subset(fm, freq>10), aes(word, freq))    
+  p <- p + geom_bar(stat="identity")   
+  p <- p + theme(axis.text.x=element_text(angle=45, hjust=1))
+  p
 }
