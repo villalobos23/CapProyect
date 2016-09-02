@@ -30,14 +30,30 @@ createCorpus <- function(texts){
   resultCorpus
 }
 
-cleanCorpus <- function(dCorpus){
+cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=FALSE){
   cCorpus <- tm_map(dCorpus, removePunctuation)
-  cCorpus <- tm_map(cCorpus,removeWords, stopwords("english"))
+  cCorpus <- tm_map(dCorpus,removeNumbers)
+  
+  if(allLower){
+    cCorpus <- tm_map(cCorpus, tolower)
+  }
+  if(removeSW)
+    cCorpus <- tm_map(cCorpus,removeWords, stopwords("english"))
   cCorpus
 }
 
-createTermDocumentMatrix <- function(corpus, lowerN, upperN){
+stemCorpus <- function(sCorpus){
+  tm_map(sCorpus,)
+}
+
+createTermDocumentMatrix <- function(corpus,
+                                     lowerN,
+                                     upperN,
+                                     removeSparse=TRUE,
+                                     sparsityTh = 0.5){
   xGramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = lowerN, max = upperN))
   tdm <- TermDocumentMatrix(crude, control = list(tokenize = xGramTokenizer))
+  if(removeSparse)
+    tdm <- removeSparseTerms(tdm,sparsityTh)
   tdm
 }
