@@ -37,13 +37,23 @@ en_US.news.sample <- readNLines(en_US.news.file,10000)
 ```
 
 where is the data from.
+
 space and sizes
+
 head structure
+
+"Corpus" is a collection of text documents.
+
 
 
 ##Cleaning Data
 
 tokenization
+
+
+
+and profanity filtering
+
 and creation of stopword and non stop n-grams (1-gram, 2-grams, 3-gram)
 
 

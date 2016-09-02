@@ -25,6 +25,14 @@ getLongestLineLength <- function(fileName){
   maxLength
 }
 
+readNLines <- function(fileName,n){
+  testcon <- file(fileName,open="r")
+  readsizeof <- n
+  lineread <- readLines(testcon,readsizeof)
+  close(testcon)
+  lineread
+}
+
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){
   testcon <- file(fileName,open="r")
   readsizeof <- 20000
