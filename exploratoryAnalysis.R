@@ -27,10 +27,16 @@ cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE){
     cCorpus <- tm_map(cCorpus, content_transformer(tolower))
   }
   cCorpus <- tm_map(cCorpus, removePunctuation)
-  cCorpus <- tm_map(cCorpus,removeNumbers)
-  cCorpus <- tm_map(cCorpus,stripWhitespace)
   removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
+  removeApostrophe <- function(x) gsub("'","",x)
+  removeAphView <- function(x) gsub("â","",x)
+  removeOtherChrs <- function(x) gsub("[^[:alnum:]///' ]", "", x) 
   cCorpus <- tm_map(cCorpus, content_transformer(removeURL))
+  cCorpus <- tm_map(cCorpus, content_transformer(removeApostrophe))
+  cCorpus <- tm_map(cCorpus, content_transformer(removeOtherChrs))
+  cCorpus <- tm_map(cCorpus, content_transformer(removeAphView))
+  cCorpus <- tm_map(cCorpus,stripWhitespace)
+  cCorpus <- tm_map(cCorpus,removeNumbers)
   if(removeSW)
     cCorpus <- tm_map(cCorpus,removeWords, stopwords("english"))
   cCorpus
@@ -45,7 +51,7 @@ createTermDocumentMatrix <- function(corpus,
                                      lowerN,
                                      upperN,
                                      removeSparse=TRUE,
-                                     sparsityTh = 0.2){
+                                     sparsityTh = 0.15){
   xGramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = lowerN, max = upperN))
   tdm <- TermDocumentMatrix(corpus, control = list(tokenize = xGramTokenizer))
   if(removeSparse)

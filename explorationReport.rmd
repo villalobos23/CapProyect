@@ -26,10 +26,21 @@ require(ggplot2)
 en_US.blog.file <- "final/en_US/en_US.blogs.txt"
 en_US.twitter.file <- "final/en_US/en_US.twitter.txt"
 en_US.news.file = "final/en_US/en_US.news.txt"
-#en_US.blog.lines <- getNumLines(en_US.blog.file)
-#en_US.twitter.lines <- getNumLines(en_US.twitter.file)
-#en_US.news.lines <- getNumLines(en_US.news.file)
+en_US.blog.lines <- getNumLines(en_US.blog.file)
+en_US.twitter.lines <- getNumLines(en_US.twitter.file)
+en_US.news.lines <- getNumLines(en_US.news.file)
+en_US.news.size <- getFileSize(en_US.news.file)
+en_US.news.wordCount <- getWordCount(en_US.news.file)
+en_US.blog.size <- getFileSize(en_US.blog.file)
+en_US.blog.wordCount <- getWordCount(en_US.blog.file)
+en_US.twitter.size <- getFileSize(en_US.twitter.file)
+en_US.twitter.wordCount <-getWordCount(en_US.twitter.file)
+
+
 sampleSize <- 100
+```
+
+```{r cache=TRUE}
 en_US.blog.sample <- readNLines(en_US.blog.file,sampleSize)
 en_US.twitter.sample <- readNLines(en_US.twitter.file,sampleSize)
 en_US.news.sample <- readNLines(en_US.news.file,sampleSize)
@@ -50,7 +61,7 @@ initialCorpus <- createCorpus(c(en_US.news.sample,en_US.twitter.sample,en_US.blo
 ##Cleaning Data
 
 tokenization for single words
-```{r cache=TRUE}
+```{r}
 #One word relationships
 cleanSample <- cleanCorpus(initialCorpus)
 cleanTdm <- createTermDocumentMatrix(cleanSample,1,1,FALSE)
@@ -78,17 +89,34 @@ and creation of stopword and non stop n-grams (1-gram, 2-grams, 3-gram)
 
 ```{r}
 cleanTdm.freq <- createFrequencyMatrix(cleanTdm)
-bigramTdm.freq <- createFrequencyMatrix(bigramTdm)
-trigramTdm.freq <- createFrequencyMatrix(trigramTdm)
+bigramTdm.freq <-createFrequencyMatrix(bigramTdm)
+trigramTdm.freq <-createFrequencyMatrix(trigramTdm)
+bigramSW.freq <- createFrequencyMatrix(bigramTdmSW)
 trigramSW.freq <- createFrequencyMatrix(trigramSW)
 
 print(head(cleanTdm.freq,10))
+print(head(bigramTdm.freq,15))
+print(head(bigramSW.freq,10))
+print(head(trigramSW.freq,10))
+
+```
+
+plots
+
+```{r fig.width=10}
 
 cleanTdm.fplot <- createFrequencyPlot(cleanTdm.freq,useMean=FALSE, minFreq = 10)
-bigramTdm.fplot <- createFrequencyPlot(bigramTdm.freq,useMean = FALSE)
-trigramTdm.fplot <- createFrequencyPlot(trigramTdm.freq, useMean = FALSE)
-trigramSw.fplot <- createFrequencyPlot(trigramSW.freq, useMean = FALSE)
-print(cleanTdm.fplot) 
+bigramTdm.fplot <-createFrequencyPlot(bigramTdm.freq)
+trigramTdm.fplot <- createFrequencyPlot(trigramTdm.freq)
+bigramSW.fplot <- createFrequencyPlot(bigramSW.freq,FALSE,minFreq = 12)
+trigramSw.fplot <- createFrequencyPlot(trigramSW.freq, useMean = FALSE,2)
+
+print(cleanTdm.fplot)
+print(bigramSW.fplot)
+print(bigramTdm.fplot)
+print(trigramSw.fplot)
+print(trigramTdm.fplot)
+
 ```
 
 

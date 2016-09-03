@@ -8,6 +8,11 @@ getNumLines <- function(fileName){
   nooflines
 }
 
+getFileSize <- function(fileName){
+  size <- file.size(fileName)
+  utils:::format.object_size(size, "auto")
+}
+
 getLongestLineLength <- function(fileName){
   testcon <- file(fileName,open="r")
   readsizeof <- 1
@@ -23,6 +28,17 @@ getLongestLineLength <- function(fileName){
   close(testcon)
   print(maxString)
   maxLength
+}
+
+getWordCount <- function(fileName){
+  testcon <- file(fileName,open="r")
+  readsizeof <- 2000
+  wordCount <- 0
+  while(length(lineread <- readLines(testcon,readsizeof)) > 0 ){
+   wordCount <- wordCount + sum(sapply(gregexpr("[[:alpha:]]+", lineread), function(x) sum(x > 0)))
+  }
+  close(testcon)
+  wordCount
 }
 
 readNLines <- function(fileName,n){
