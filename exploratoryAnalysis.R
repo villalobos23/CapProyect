@@ -1,6 +1,6 @@
 library(RWeka)
 library(tm)
-
+library(ggplot2)
 #Rgraph viz
 #> source("http://bioconductor.org/biocLite.R")
 #    biocLite("Rgraphviz")
@@ -56,12 +56,18 @@ createTermDocumentMatrix <- function(corpus,
 createFrequencyMatrix <- function(tdm){
   freqs <- as.matrix(tdm)
   freqs <- sort(rowSums(freqs),decreasing = T)
-  freqs <- data.frame(word = names(cfreqs),freq = freqs)
+  freqs <- data.frame(word = names(freqs),freq = freqs)
   freqs
 }
 
-createFrequencyPlot <- function(fm){
-  p <- ggplot(subset(fm, freq>10), aes(word, freq))    
+createFrequencyPlot <- function(fm,useMean=TRUE,minFreq=1){
+  currentMean <- 0
+  if(useMean){
+    currentMean <- mean(fm$freq)
+  }else{
+    currentMean <- minFreq
+  }
+  p <- ggplot(subset(fm, freq>currentMean), aes(word, freq))    
   p <- p + geom_bar(stat="identity")   
   p <- p + theme(axis.text.x=element_text(angle=45, hjust=1))
   p

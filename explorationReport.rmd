@@ -23,13 +23,13 @@ require(ggplot2)
 [//]: # ```
 
 ```{r cache=TRUE}
-sampleSize <- 100
 en_US.blog.file <- "final/en_US/en_US.blogs.txt"
 en_US.twitter.file <- "final/en_US/en_US.twitter.txt"
 en_US.news.file = "final/en_US/en_US.news.txt"
 #en_US.blog.lines <- getNumLines(en_US.blog.file)
 #en_US.twitter.lines <- getNumLines(en_US.twitter.file)
 #en_US.news.lines <- getNumLines(en_US.news.file)
+sampleSize <- 100
 en_US.blog.sample <- readNLines(en_US.blog.file,sampleSize)
 en_US.twitter.sample <- readNLines(en_US.twitter.file,sampleSize)
 en_US.news.sample <- readNLines(en_US.news.file,sampleSize)
@@ -51,11 +51,16 @@ initialCorpus <- createCorpus(c(en_US.news.sample,en_US.twitter.sample,en_US.blo
 
 tokenization for single words
 ```{r cache=TRUE}
+#One word relationships
 cleanSample <- cleanCorpus(initialCorpus)
 cleanTdm <- createTermDocumentMatrix(cleanSample,1,1,FALSE)
+bigramTdm <- createTermDocumentMatrix(cleanSample,2,2,FALSE)
+trigramTdm <- createTermDocumentMatrix(cleanSample,3,3,FALSE)
+#with stopwords
 cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE)
-bigramTdm <- createTermDocumentMatrix(cleanSampleSW,2,2,FALSE)
-trigram <- createTermDocumentMatrix(cleanSampleSW,3,3,FALSE)
+bigramTdmSW <- createTermDocumentMatrix(cleanSampleSW,2,2,FALSE)
+trigramSW <- createTermDocumentMatrix(cleanSampleSW,3,3,FALSE)
+#With stemming
 cleanSample.stemmed <- stemCorpus(cleanSample)
 cleanTdm.stemmed <- createTermDocumentMatrix(cleanSample.stemmed,1,1,FALSE)
 ```
@@ -72,16 +77,18 @@ and creation of stopword and non stop n-grams (1-gram, 2-grams, 3-gram)
 ###Distribution of word frequencies
 
 ```{r}
-cleanTdm.freq <- as.matrix(cleanTdm)
-cleanTdm.freq <- sort(rowSums(cleanTdm.freq),decreasing = T)
-cleanTdm.freq <- data.frame(word = names(cleanTdm.freq),freq = cleanTdm.freq)
+cleanTdm.freq <- createFrequencyMatrix(cleanTdm)
+bigramTdm.freq <- createFrequencyMatrix(bigramTdm)
+trigramTdm.freq <- createFrequencyMatrix(trigramTdm)
+trigramSW.freq <- createFrequencyMatrix(trigramSW)
 
 print(head(cleanTdm.freq,10))
 
-p <- ggplot(subset(cleanTdm.freq, freq>10), aes(word, freq))    
-p <- p + geom_bar(stat="identity")   
-p <- p + theme(axis.text.x=element_text(angle=45, hjust=1))   
-print(p) 
+cleanTdm.fplot <- createFrequencyPlot(cleanTdm.freq,useMean=FALSE, minFreq = 10)
+bigramTdm.fplot <- createFrequencyPlot(bigramTdm.freq,useMean = FALSE)
+trigramTdm.fplot <- createFrequencyPlot(trigramTdm.freq, useMean = FALSE)
+trigramSw.fplot <- createFrequencyPlot(trigramSW.freq, useMean = FALSE)
+print(cleanTdm.fplot) 
 ```
 
 
