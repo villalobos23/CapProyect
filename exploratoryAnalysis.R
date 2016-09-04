@@ -5,17 +5,6 @@ library(ggplot2)
 #> source("http://bioconductor.org/biocLite.R")
 #    biocLite("Rgraphviz")
 
-ngramsGist <- function(){#https://gist.github.com/benmarwick/5370329
-  data("crude")
-  
-  BigramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
-  tdm <- TermDocumentMatrix(crude, control = list(tokenize = BigramTokenizer))
-  
-  inspect(tdm[340:345,1:10])
-  
-  plot(tdm, terms = findFreqTerms(tdm, lowfreq = 2)[1:50], corThreshold = 0.5)
-}
-
 createCorpus <- function(texts){
   resultCorpus <- VCorpus(VectorSource(texts)) 
   resultCorpus
@@ -66,7 +55,7 @@ createFrequencyMatrix <- function(tdm){
   freqs
 }
 
-createFrequencyPlot <- function(fm,useMean=TRUE,minFreq=1){
+createFrequencyPlot <- function(fm,useMean=TRUE,minFreq=1,plotTitle="N-gram Freq."){
   currentMean <- 0
   if(useMean){
     currentMean <- mean(fm$freq)
@@ -76,5 +65,15 @@ createFrequencyPlot <- function(fm,useMean=TRUE,minFreq=1){
   p <- ggplot(subset(fm, freq>currentMean), aes(word, freq))    
   p <- p + geom_bar(stat="identity")   
   p <- p + theme(axis.text.x=element_text(angle=45, hjust=1))
+  p <- p + ggtitle(plotTitle) + labs(x="Words",y="Frequencies")
   p
+}
+
+getCoverageAmount <- function(freqMatrix, coverage){
+  freqSum <- cumsum(freqMatrix$freq)
+  min(which(freqSum > (coverage*sum(freqMatrix$freq))))
+}
+
+createWordCorrelationPlot <- function(){
+  plot(tdm, terms = findFreqTerms(tdm, lowfreq = 2)[1:50], corThreshold = 0.5)
 }

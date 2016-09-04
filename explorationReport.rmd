@@ -11,57 +11,82 @@ require(tm)
 require(RWeka)
 require(Rgraphviz)
 require(ggplot2)
+set.seed(23031990)
 ```
 #Introduction
 
+The usages of natural language processing have increased in the passing of years, becoming a precise and advanced area. Understanding the flows and ebbs of human writing in its different languages proves to be a daunting task. A particular use of Natural Language Processing (NLP) is text prediction, in the form of a person typing/writing a sentence and being able to suggest or understand the possible words to be used in such a sentence. 
+
+The main task of the report is to show the distribution and relationship of words and group of words in order to create a suitable understanding for the creation of a future text prediction model.The code for performing the analysis can be found [here](https://github.com/villalobos23/CapProyect)
 
 ##Initial Analysis
 
-[//]: # ```{r cache=TRUE}
-[//]: # downloadZipFile()
-[//]: # extractFiles("Coursera-SwiftKey.zip")
-[//]: # ```
+The used in this analysis is drawn from a subset of the HC Corpora Website available Corpus. This Corpus or group of documents represents text that comes from news articles, tweets and blog entries. For more information you could visit their [website](http://www.corpora.heliohost.org/)
 
-```{r cache=TRUE}
+```{r eval=FALSE}
+downloadZipFile()
+extractFiles("Coursera-SwiftKey.zip")
+```
+We proceed to examine the initial corpus files, in order to determine the size of the data we are managing and their presentation. We are using for the purposes of this analysis the data corresponding to the english language. Following up a basic table with the data
+
+```{r cache=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
 en_US.blog.file <- "final/en_US/en_US.blogs.txt"
 en_US.twitter.file <- "final/en_US/en_US.twitter.txt"
 en_US.news.file = "final/en_US/en_US.news.txt"
 en_US.blog.lines <- getNumLines(en_US.blog.file)
 en_US.twitter.lines <- getNumLines(en_US.twitter.file)
 en_US.news.lines <- getNumLines(en_US.news.file)
-en_US.news.size <- getFileSize(en_US.news.file)
-en_US.news.wordCount <- getWordCount(en_US.news.file)
 en_US.blog.size <- getFileSize(en_US.blog.file)
-en_US.blog.wordCount <- getWordCount(en_US.blog.file)
 en_US.twitter.size <- getFileSize(en_US.twitter.file)
+en_US.news.size <- getFileSize(en_US.news.file)
+en_US.blog.wordCount <- getWordCount(en_US.blog.file)
 en_US.twitter.wordCount <-getWordCount(en_US.twitter.file)
-
-
-sampleSize <- 100
+en_US.news.wordCount <- getWordCount(en_US.news.file)
 ```
 
 ```{r cache=TRUE}
+fileNames <- c(en_US.blog.file,en_US.twitter.file,en_US.news.file)
+numLines <- c(en_US.blog.lines,en_US.twitter.lines,en_US.news.lines)
+fileSizes <- c(en_US.blog.size,en_US.twitter.size,en_US.news.size)
+wordCount <- c(en_US.blog.wordCount,en_US.twitter.wordCount,en_US.news.wordCount)
+fileDataDf <- data.frame(fileNames,numLines,fileSizes,wordCount)
+colnames(fileDataDf) <- c("names","Lines","Size","words")
+print(fileDataDf)
+```
+
+
+```{r cache=TRUE}
+sampleSize <- 1000
 en_US.blog.sample <- readNLines(en_US.blog.file,sampleSize)
 en_US.twitter.sample <- readNLines(en_US.twitter.file,sampleSize)
 en_US.news.sample <- readNLines(en_US.news.file,sampleSize)
-```
-
-where is the data from.
-
-space and sizes
-
-head structure
-
-"Corpus" is a collection of text documents.
-
-```{r}
 initialCorpus <- createCorpus(c(en_US.news.sample,en_US.twitter.sample,en_US.blog.sample))
 ```
 
+Head of the blog sample
+```{r}
+head(en_US.blog.sample)
+```
+Head of the twitter Sample
+```{r}
+head(en_US.twitter.sample)
+```
+Head of the news Sample
+```{r}
+head(en_US.news.sample)
+```
 ##Cleaning Data
 
-tokenization for single words
-```{r}
+This process is divided in generating 1-grams, 2-grams and 3-grams with and without stopwords, followed by a stemmed 1-gram to compare size of the object for the future app.The cleaning of the corpus is made of the folowing transformations
+      *Lower case the texts (Optional)
+      *Remove punctuation
+      *Remove URLs
+      *Remove apostrophes that were in other encodings
+      *Remove mixed up letters that showed up that were not part of the dictionary
+      *Strip whitespaces
+      *remove numbers
+      *Remove stopwords (Optional)
+```{r cache= TRUE}
 #One word relationships
 cleanSample <- cleanCorpus(initialCorpus)
 cleanTdm <- createTermDocumentMatrix(cleanSample,1,1,FALSE)
@@ -71,22 +96,13 @@ trigramTdm <- createTermDocumentMatrix(cleanSample,3,3,FALSE)
 cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE)
 bigramTdmSW <- createTermDocumentMatrix(cleanSampleSW,2,2,FALSE)
 trigramSW <- createTermDocumentMatrix(cleanSampleSW,3,3,FALSE)
-#With stemming
-cleanSample.stemmed <- stemCorpus(cleanSample)
-cleanTdm.stemmed <- createTermDocumentMatrix(cleanSample.stemmed,1,1,FALSE)
 ```
-
-
-
-and profanity filtering
-
-and creation of stopword and non stop n-grams (1-gram, 2-grams, 3-gram)
 
 
 ##Word Frequency and word pairs
 
 ###Distribution of word frequencies
-
+We start by creating and determining the frequencies in each n-gram model created previously and printing the 10 to 15 first "n-grams" with the highest frequency in each corpus with the different processing strategies.
 ```{r}
 cleanTdm.freq <- createFrequencyMatrix(cleanTdm)
 bigramTdm.freq <-createFrequencyMatrix(bigramTdm)
@@ -96,20 +112,21 @@ trigramSW.freq <- createFrequencyMatrix(trigramSW)
 
 print(head(cleanTdm.freq,10))
 print(head(bigramTdm.freq,15))
-print(head(bigramSW.freq,10))
+print(head(bigramSW.freq,15))
+print(head(trigramTdm.freq,10))
 print(head(trigramSW.freq,10))
 
 ```
 
-plots
+Now in barplots we represent the main word for each type of n-gram
 
 ```{r fig.width=10}
 
-cleanTdm.fplot <- createFrequencyPlot(cleanTdm.freq,useMean=FALSE, minFreq = 10)
-bigramTdm.fplot <-createFrequencyPlot(bigramTdm.freq)
-trigramTdm.fplot <- createFrequencyPlot(trigramTdm.freq)
-bigramSW.fplot <- createFrequencyPlot(bigramSW.freq,FALSE,minFreq = 12)
-trigramSw.fplot <- createFrequencyPlot(trigramSW.freq, useMean = FALSE,2)
+cleanTdm.fplot <- createFrequencyPlot(cleanTdm.freq,useMean=FALSE, minFreq = 100,plotTitle="Single Word Frequencies")
+bigramTdm.fplot <-createFrequencyPlot(bigramTdm.freq,useMean = FALSE,minFreq = 10,plotTitle="Bi-gram Frequencies")
+trigramTdm.fplot <- createFrequencyPlot(trigramTdm.freq,useMean = FALSE,minFreq = 2,plotTitle="Trigram Frequencies")
+bigramSW.fplot <- createFrequencyPlot(bigramSW.freq,FALSE,minFreq = 100,plotTitle="Bigram with Stopwords Frequencies")
+trigramSw.fplot <- createFrequencyPlot(trigramSW.freq, useMean = FALSE,minFreq = 10,plotTitle="Trigram with Stopwords Frequencies")
 
 print(cleanTdm.fplot)
 print(bigramSW.fplot)
@@ -119,17 +136,21 @@ print(trigramTdm.fplot)
 
 ```
 
-
-
-non stopword and stopwords
-
-
-###Distribution of 2-grams and 3-grams
-mixed only
-
 ###Word coverage
 
-How many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language and with 90%
+###How many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language 
 
+This is determined by the moment in which the cumulative sum of the unique word frequencies is higher than the 50% of word instances. That is `r getCoverageAmount(cleanTdm.freq,0.5)`. In the 90% case that is `r getCoverageAmount(cleanTdm.freq,0.9)`
 
+##Findings
+  *Profanities were not removed since they did not represent a signiicant part of the words in the corpus being analyzed, however this could be an optional feature. 
+  * Other language words can be identified in some cases by checking the encoding of the words (like swedish and finnish) but some words in other languages would require checking against an external source. However that operation must be compared to the fact that if the user is engaging is the usage of words of multiple languages it may be better to add that word in order to improve user experience
+  *The amount of data and the size of the objects is quite high created to perform the n-gram analysis thus the training data set of the prediction model must be carefully selected in order to handle a computationally manageble training set.
+  *By stemming some of the n-grams we can achieve greater coverage by decreasing size but increasing processing in the reconstruction of the specific n-gram. Another way is receiving input from the user that could alter the frequencies of the model and thus create a more smooth prediction by taking into account the preferences of the user.
+  *It requires sophisticated filters in order to recognize bigram that are onegrams like the names of cities like New York or writing mistakes like rightnow. 
+  
+##Ideas for the Shiny App
+  *Dependening if a word is a stopword or not we could suggest a different kind of n-gram, writing a stopword gives us a hint of what kind of words we could predict.
+  * The storage dedicated to the bigrams and trigrams could be less since we have to handle a different amount of unique combinations that are actually useful.
+  *Stemming in the case of unique single words could help reducing the storage of the model.
 
