@@ -48,9 +48,13 @@ createTermDocumentMatrix <- function(corpus,
   tdm
 }
 
-createFrequencyMatrix <- function(tdm){
+createFrequencyMatrix <- function(tdm, col=FALSE){
   freqs <- as.matrix(tdm)
-  freqs <- sort(rowSums(freqs),decreasing = T)
+  if(col){
+    freqs <- sort(colSums(freqs),decreasing = T)
+  }else{
+   freqs <- sort(rowSums(freqs),decreasing = T)
+  }
   freqs <- data.frame(word = names(freqs),freq = freqs)
   freqs
 }
@@ -74,6 +78,6 @@ getCoverageAmount <- function(freqMatrix, coverage){
   min(which(freqSum > (coverage*sum(freqMatrix$freq))))
 }
 
-createWordCorrelationPlot <- function(){
-  plot(tdm, terms = findFreqTerms(tdm, lowfreq = 2)[1:50], corThreshold = 0.5)
+createWordCorrelationPlot <- function(tdm, maxNet = 50,lowerFreq = 2, corThres= 0.5){
+  plot(tdm, terms = findFreqTerms(tdm, lowfreq = lowerFreq)[1:maxNet], corThreshold = corThres)
 }

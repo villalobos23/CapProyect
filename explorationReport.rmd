@@ -56,11 +56,17 @@ print(fileDataDf)
 
 
 ```{r cache=TRUE}
-sampleSize <- 1000
-en_US.blog.sample <- readNLines(en_US.blog.file,sampleSize)
-en_US.twitter.sample <- readNLines(en_US.twitter.file,sampleSize)
-en_US.news.sample <- readNLines(en_US.news.file,sampleSize)
-initialCorpus <- createCorpus(c(en_US.news.sample,en_US.twitter.sample,en_US.blog.sample))
+sampleSize <- 0.1
+en_US.blog.sample <- iconv(readNLines(en_US.blog.file,sampleSize*en_US.blog.lines),'UTF-8', 'ASCII')
+en_US.twitter.sample <-  iconv(readNLines(en_US.twitter.file,sampleSize*en_US.twitter.lines),'UTF-8', 'ASCII')
+en_US.news.sample <- iconv(readNLines(en_US.news.file,sampleSize*en_US.news.lines),'UTF-8', 'ASCII')
+en_US.blog.doc <- PlainTextDocument(en_US.blog.sample)
+en_US.twitter.doc <- PlainTextDocument(en_US.twitter.sample)
+en_US.news.doc <- PlainTextDocument(en_US.news.sample)
+initialCorpus <- createCorpus(c(en_US.news.doc,en_US.twitter.doc,en_US.blog.doc))
+meta(initialCorpus[[1]], tag = "description") <- "news"
+meta(initialCorpus[[2]], tag = "description") <- "twitter"
+meta(initialCorpus[[3]], tag = "description") <- "blog"
 ```
 
 Head of the blog sample
@@ -92,10 +98,15 @@ cleanSample <- cleanCorpus(initialCorpus)
 cleanTdm <- createTermDocumentMatrix(cleanSample,1,1,FALSE)
 bigramTdm <- createTermDocumentMatrix(cleanSample,2,2,FALSE)
 trigramTdm <- createTermDocumentMatrix(cleanSample,3,3,FALSE)
+fgram <- createTermDocumentMatrix(cleanSample,4,4,FALSE)
 #with stopwords
 cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE)
+cleanSampleSW[[1]]$content <- cleanSampleSW[[1]]$content[!is.na(cleanSampleSW[[1]]$content)]
+cleanSampleSW[[2]]$content <- cleanSampleSW[[2]]$content[!is.na(cleanSampleSW[[2]]$content)]
+cleanSampleSW[[3]]$content <- cleanSampleSW[[3]]$content[!is.na(cleanSampleSW[[3]]$content)]
 bigramTdmSW <- createTermDocumentMatrix(cleanSampleSW,2,2,FALSE)
 trigramSW <- createTermDocumentMatrix(cleanSampleSW,3,3,FALSE)
+fgramSW <- createTermDocumentMatrix(cleanSampleSW,4,4,FALSE)
 ```
 
 
@@ -107,8 +118,10 @@ We start by creating and determining the frequencies in each n-gram model create
 cleanTdm.freq <- createFrequencyMatrix(cleanTdm)
 bigramTdm.freq <-createFrequencyMatrix(bigramTdm)
 trigramTdm.freq <-createFrequencyMatrix(trigramTdm)
+fgram.freq <- createFrequencyMatrix(fgram)
 bigramSW.freq <- createFrequencyMatrix(bigramTdmSW)
 trigramSW.freq <- createFrequencyMatrix(trigramSW)
+fgramSW.freq <- createFrequencyMatrix(fgramSW)
 
 print(head(cleanTdm.freq,10))
 print(head(bigramTdm.freq,15))

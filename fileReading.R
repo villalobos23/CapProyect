@@ -44,7 +44,7 @@ getWordCount <- function(fileName){
 readNLines <- function(fileName,n){
   testcon <- file(fileName,open="r")
   readsizeof <- n
-  lineread <- readLines(testcon,readsizeof)
+  lineread <- readLines(testcon,readsizeof,encoding="UTF-8")
   close(testcon)
   lineread
 }
