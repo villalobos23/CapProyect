@@ -49,6 +49,19 @@ readNLines <- function(fileName,n){
   lineread
 }
 
+readRandomLines <- function(){
+  set.seed(23031990)
+  lineNumber = sample(120, 2)
+  line1 = scan(filename, what = "integer", skip=lineNumber[1]-1, nlines=1)
+  line2 = scan(filename, what = "integer", skip=lineNumber[2]-1, nlines=1)
+  
+  system.time(for (i in 50){
+      lineNumber = sample(120, 2)
+      line1 = scan(filename, what = "integer", skip=lineNumber[1]-1, nlines=1)
+      line2 = scan(filename, what = "integer", skip=lineNumber[2]-1, nlines=1)
+     })
+}
+
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){
   testcon <- file(fileName,open="r")
   readsizeof <- 20000
