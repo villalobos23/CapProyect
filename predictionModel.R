@@ -1,5 +1,20 @@
-getMostFrequent<- function(freqs,literal){
-  freqs$word[which(grepl(paste("^",literal,sep=""),freqs$word))]
+getMostFrequentStart<- function(freqs,literal){
+  freqs[which(grepl(paste("^",literal,sep=""),freqs$word)),]
+}
+
+getMostFrequentEnd <- function(freqs, literal){
+  freqs$word[which(grepl(paste(literal,"$",sep=""),freqs$word)),]
+}
+
+getMostFrequent <- function(freqs, literal){
+  freqs$word[which(grepl(literal,freqs$word)),]
+}
+
+createRelativeFreq <- function(suffixFreqs,prefixFreqs,literal){
+  wordsM <- getMostFrequentStart(suffixFreqs,literal)$word
+  freqsM <- getMostFrequentStart(suffixFreqs,literal)$freq/getMostFrequentStart(prefixFreqs,literal)$freq
+  relFreq <- df(wordsM,freqsM)
+  relFreq
 }
 
 createTestData <- function(){
