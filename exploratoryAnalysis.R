@@ -10,7 +10,7 @@ createCorpus <- function(texts){
   resultCorpus
 }
 
-cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE){
+cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE,removeApos=TRUE){
   cCorpus <- dCorpus
   if(allLower){
     cCorpus <- tm_map(cCorpus, content_transformer(tolower))
@@ -18,10 +18,12 @@ cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE){
   cCorpus <- tm_map(cCorpus, removePunctuation)
   removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
   removeApostrophe <- function(x) gsub("'","",x)
-  removeAphView <- function(x) gsub("â","",x)
+  removeAphView <- function(x) gsub("?","",x)
   removeOtherChrs <- function(x) gsub("[^[:alnum:]///' ]", "", x) 
   cCorpus <- tm_map(cCorpus, content_transformer(removeURL))
-  cCorpus <- tm_map(cCorpus, content_transformer(removeApostrophe))
+  if(removeApos){
+   cCorpus <- tm_map(cCorpus, content_transformer(removeApostrophe))
+  }
   cCorpus <- tm_map(cCorpus, content_transformer(removeOtherChrs))
   cCorpus <- tm_map(cCorpus, content_transformer(removeAphView))
   cCorpus <- tm_map(cCorpus,stripWhitespace)

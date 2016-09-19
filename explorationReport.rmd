@@ -57,12 +57,17 @@ print(fileDataDf)
 
 ```{r cache=TRUE}
 sampleSize <- 0.1
-en_US.blog.sample <- iconv(readNLines(en_US.blog.file,sampleSize*en_US.blog.lines),'UTF-8', 'ASCII')
-en_US.twitter.sample <-  iconv(readNLines(en_US.twitter.file,sampleSize*en_US.twitter.lines),'UTF-8', 'ASCII')
-en_US.news.sample <- iconv(readNLines(en_US.news.file,sampleSize*en_US.news.lines),'UTF-8', 'ASCII')
-en_US.blog.doc <- PlainTextDocument(en_US.blog.sample)
-en_US.twitter.doc <- PlainTextDocument(en_US.twitter.sample)
-en_US.news.doc <- PlainTextDocument(en_US.news.sample)
+testSize <- 0.05
+en_US.blog.sample <- 
+  readNLines(en_US.blog.file,sampleSize*en_US.blog.lines,testSize*en_US.blog.lines)
+en_US.twitter.sample <- 
+  readNLines(en_US.twitter.file,sampleSize*en_US.twitter.lines,testSize*en_US.twitter.lines)
+en_US.news.sample <- 
+  readNLines(en_US.news.file,sampleSize*en_US.news.lines,testSize*en_US.news.lines)
+
+en_US.blog.doc <- PlainTextDocument(en_US.blog.sample$dev)
+en_US.twitter.doc <- PlainTextDocument(en_US.twitter.sample$dev)
+en_US.news.doc <- PlainTextDocument(en_US.news.sample$dev)
 initialCorpus <- createCorpus(c(en_US.news.doc,en_US.twitter.doc,en_US.blog.doc))
 meta(initialCorpus[[1]], tag = "description") <- "news"
 meta(initialCorpus[[2]], tag = "description") <- "twitter"
@@ -71,15 +76,15 @@ meta(initialCorpus[[3]], tag = "description") <- "blog"
 
 Head of the blog sample
 ```{r}
-head(en_US.blog.sample)
+head(en_US.blog.sample$dev)
 ```
 Head of the twitter Sample
 ```{r}
-head(en_US.twitter.sample)
+head(en_US.twitter.sample$dev)
 ```
 Head of the news Sample
 ```{r}
-head(en_US.news.sample)
+head(en_US.news.sample$dev)
 ```
 ##Cleaning Data
 
@@ -104,6 +109,7 @@ cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE)
 cleanSampleSW[[1]]$content <- cleanSampleSW[[1]]$content[!is.na(cleanSampleSW[[1]]$content)]
 cleanSampleSW[[2]]$content <- cleanSampleSW[[2]]$content[!is.na(cleanSampleSW[[2]]$content)]
 cleanSampleSW[[3]]$content <- cleanSampleSW[[3]]$content[!is.na(cleanSampleSW[[3]]$content)]
+unigramSW <- createTermDocumentMatrix(cleanSampleSW,1,1,FALSE)
 bigramTdmSW <- createTermDocumentMatrix(cleanSampleSW,2,2,FALSE)
 trigramSW <- createTermDocumentMatrix(cleanSampleSW,3,3,FALSE)
 fgramSW <- createTermDocumentMatrix(cleanSampleSW,4,4,FALSE)

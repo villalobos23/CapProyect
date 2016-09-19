@@ -8,11 +8,6 @@ getNumLines <- function(fileName){
   nooflines
 }
 
-getFileSize <- function(fileName){
-  size <- file.size(fileName)
-  utils:::format.object_size(size, "auto")
-}
-
 getLongestLineLength <- function(fileName){
   testcon <- file(fileName,open="r")
   readsizeof <- 1
@@ -30,36 +25,14 @@ getLongestLineLength <- function(fileName){
   maxLength
 }
 
-getWordCount <- function(fileName){
-  testcon <- file(fileName,open="r")
-  readsizeof <- 2000
-  wordCount <- 0
-  while(length(lineread <- readLines(testcon,readsizeof)) > 0 ){
-   wordCount <- wordCount + sum(sapply(gregexpr("[[:alpha:]]+", lineread), function(x) sum(x > 0)))
-  }
-  close(testcon)
-  wordCount
-}
-
-readNLines <- function(fileName,n){
+readNLines <- function(fileName,n,nTest){
   testcon <- file(fileName,open="r")
   readsizeof <- n
-  lineread <- readLines(testcon,readsizeof,encoding="UTF-8")
+  lineread <- readLines(testcon,readsizeof)
+  lineread.test <- readLines(testcon,nTest)
   close(testcon)
-  lineread
-}
-
-readRandomLines <- function(){
-  set.seed(23031990)
-  lineNumber = sample(120, 2)
-  line1 = scan(filename, what = "integer", skip=lineNumber[1]-1, nlines=1)
-  line2 = scan(filename, what = "integer", skip=lineNumber[2]-1, nlines=1)
-  
-  system.time(for (i in 50){
-      lineNumber = sample(120, 2)
-      line1 = scan(filename, what = "integer", skip=lineNumber[1]-1, nlines=1)
-      line2 = scan(filename, what = "integer", skip=lineNumber[2]-1, nlines=1)
-     })
+  finalMatrix <- list(dev=iconv(lineread,'UTF-8','ASCII'),test=iconv(lineread.test,'UTF-8','ASCII'))
+  finalMatrix
 }
 
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){
