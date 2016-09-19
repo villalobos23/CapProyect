@@ -3,18 +3,46 @@ getMostFrequentStart<- function(freqs,literal){
 }
 
 getMostFrequentEnd <- function(freqs, literal){
-  freqs$word[which(grepl(paste(literal,"$",sep=""),freqs$word)),]
+  freqs[which(grepl(paste(literal,"$",sep=""),freqs$word)),]
 }
 
 getMostFrequent <- function(freqs, literal){
-  freqs$word[which(grepl(literal,freqs$word)),]
+  freqs[which(grepl(literal,freqs$word)),]
 }
 
+#This gives the relative frequency between an n-gram and its n-1gram based model
+# It divides the frequency of the ngram by the frequency of the n-1gram
 createRelativeFreq <- function(suffixFreqs,prefixFreqs,literal){
-  wordsM <- getMostFrequentStart(suffixFreqs,literal)$word
-  freqsM <- getMostFrequentStart(suffixFreqs,literal)$freq/getMostFrequentStart(prefixFreqs,literal)$freq
-  relFreq <- df(wordsM,freqsM)
-  relFreq
+  augmentedLiteral <- paste(paste("\\b",literal,sep=""),"\\b",sep="")
+  wordsM <- getMostFrequentStart(suffixFreqs,augmentedLiteral)
+  wordsM$relFreq <- wordsM$freq/getMostFrequentStart(prefixFreqs,augmentedLiteral)$freq
+  wordsM
+}
+
+#This gives the relative frequency of a literal as an starting word in an ngram
+startingFreq <- function(xgram,literal){
+  augmentedLiteral <- paste(paste("\\b",literal,sep=""),"\\b",sep="")
+  startF <- sum(getMostFrequentStart(xgram,augmentedLiteral)$freq)
+  mLength <- length(xgram$word)
+  startF/mLength
+}
+
+#This gives the relative frequency of a literal as an starting word in an ngram
+#It appears to be incorrect, the division should be made by the number of sentence starts
+#not by the frequency of the starting words
+startingFreq2 <- function(xgram,ygram,literal){
+  augmentedLiteral <- paste(paste("\\b",literal,sep=""),"\\b",sep="")
+  startF <- sum(getMostFrequentStart(xgram,augmentedLiteral)$freq)
+  mLength <- getMostFrequentStart(ygram,augmentedLiteral)$freq
+  startF/mLength
+}
+
+#This gives the relative frequency of a literal as an ending word in an ngram
+endingFreq <- function(xgram,ygram,literal){
+  augmentedLiteral <- paste(paste("\\b",literal,sep=""),"\\b",sep="")
+  endings <- getMostFrequentEnd(xgram,augmentedLiteral)
+  asPrefix <- getMostFrequentStart(ygram,augmentedLiteral)
+  sum(endings$freq)/asPrefix$freq
 }
 
 createTestData <- function(){
