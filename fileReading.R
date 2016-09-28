@@ -28,11 +28,18 @@ getLongestLineLength <- function(fileName){
 readNLines <- function(fileName,n,nTest){
   testcon <- file(fileName,open="r")
   readsizeof <- n
-  lineread <- readLines(testcon,readsizeof)
-  lineread.test <- readLines(testcon,nTest)
+  lineread <- addSentenceMarks(readLines(testcon,readsizeof))
+  lineread.test <- addSentenceMarks(readLines(testcon,nTest))
   close(testcon)
   finalMatrix <- list(dev=iconv(lineread,'UTF-8','ASCII'),test=iconv(lineread.test,'UTF-8','ASCII'))
   finalMatrix
+}
+
+addSentenceMarks <- function(lineread){
+  replaced <- paste("<s>",lineread,sep=" ")
+  replaced <- gsub("[Mr|Ms|Dr|Phd|MD]*[.?!,][^$]","\\1</s> <s> ",replaced,ignore.case = TRUE)
+  replaced <- paste(replaced,"</s>",sep = " ")
+  replaced
 }
 
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){
