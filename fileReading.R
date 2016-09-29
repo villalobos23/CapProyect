@@ -37,7 +37,8 @@ readNLines <- function(fileName,n,nTest){
 
 addSentenceMarks <- function(lineread){
   replaced <- paste("<s>",lineread,sep=" ")
-  replaced <- gsub("[Mr|Ms|Dr|Phd|MD]*[.?!,][^$]","\\1</s> <s> ",replaced,ignore.case = TRUE)
+  #replaced <- sub("(mr.)","\\1",replaced,ignore.case = TRUE)
+  replaced <- gsub("[(.?!,)][^$]","</s> <s> ",replaced,ignore.case = TRUE)
   replaced <- paste(replaced,"</s>",sep = " ")
   replaced
 }
