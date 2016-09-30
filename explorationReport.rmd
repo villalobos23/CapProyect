@@ -56,8 +56,8 @@ print(fileDataDf)
 
 
 ```{r cache=TRUE}
-sampleSize <- 0.1
-testSize <- 0.05
+sampleSize <- 0.01
+testSize <- 0.005
 en_US.blog.sample <- 
   readNLines(en_US.blog.file,sampleSize*en_US.blog.lines,testSize*en_US.blog.lines)
 en_US.twitter.sample <- 
@@ -125,11 +125,13 @@ cleanTdm.freq <- createFrequencyMatrix(cleanTdm)
 bigramTdm.freq <-createFrequencyMatrix(bigramTdm)
 trigramTdm.freq <-createFrequencyMatrix(trigramTdm)
 fgram.freq <- createFrequencyMatrix(fgram)
+unigramSW.freq <- createFrequencyMatrix(unigramSW)
 bigramSW.freq <- createFrequencyMatrix(bigramTdmSW)
 trigramSW.freq <- createFrequencyMatrix(trigramSW)
 fgramSW.freq <- createFrequencyMatrix(fgramSW)
 
 print(head(cleanTdm.freq,10))
+print(head(unigramSW.freq,15))
 print(head(bigramTdm.freq,15))
 print(head(bigramSW.freq,15))
 print(head(trigramTdm.freq,10))

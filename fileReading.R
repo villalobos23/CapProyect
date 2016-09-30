@@ -37,10 +37,20 @@ readNLines <- function(fileName,n,nTest){
 
 addSentenceMarks <- function(lineread){
   replaced <- paste("<s>",lineread,sep=" ")
-  #replaced <- sub("(mr.)","\\1",replaced,ignore.case = TRUE)
+  replaced <- replaceTitles(replaced)
   replaced <- gsub("[(.?!,)][^$]","</s> <s> ",replaced,ignore.case = TRUE)
   replaced <- paste(replaced,"</s>",sep = " ")
   replaced
+}
+
+replaceTitles <- function(line){
+  replaced <- gsub("mr.","Mr",line,ignore.case = TRUE)
+  replaced <- gsub("ms.","Ms",line,ignore.case = TRUE)
+  replaced <- gsub("phd.","PhD",line,ignore.case = TRUE)
+  replaced <- gsub("md.","MD",line,ignore.case = TRUE)
+  replaced <- gsub("msc.","Msc",line,ignore.case = TRUE)
+  replaced
+  
 }
 
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){

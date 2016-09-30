@@ -17,6 +17,7 @@ cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE,removeApos=TRUE){
   }
   cCorpus <- tm_map(cCorpus, removePunctuation)
   removeURL <- function(x) gsub("http[[:alnum:]]*", "", x)
+  #We have to remove this transformation
   removeApostrophe <- function(x) gsub("'","",x)
   removeAphView <- function(x) gsub("?","",x)
   removeOtherChrs <- function(x) gsub("[^[:alnum:]///' ]", "", x) 
