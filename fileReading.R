@@ -1,3 +1,5 @@
+if(!exists("addSentenceMarks", mode="function")) source("utils.R")
+
 getNumLines <- function(fileName){
   testcon <- file(fileName,open="r")
   readsizeof <- 20000
@@ -33,24 +35,6 @@ readNLines <- function(fileName,n,nTest){
   close(testcon)
   finalMatrix <- list(dev=iconv(lineread,'UTF-8','ASCII'),test=iconv(lineread.test,'UTF-8','ASCII'))
   finalMatrix
-}
-
-addSentenceMarks <- function(lineread){
-  replaced <- paste("<s>",lineread,sep=" ")
-  replaced <- replaceTitles(replaced)
-  replaced <- gsub("[(.?!,)][^$]","</s> <s> ",replaced,ignore.case = TRUE)
-  replaced <- paste(replaced,"</s>",sep = " ")
-  replaced
-}
-
-replaceTitles <- function(line){
-  replaced <- gsub("mr.","Mr",line,ignore.case = TRUE)
-  replaced <- gsub("ms.","Ms",line,ignore.case = TRUE)
-  replaced <- gsub("phd.","PhD",line,ignore.case = TRUE)
-  replaced <- gsub("md.","MD",line,ignore.case = TRUE)
-  replaced <- gsub("msc.","Msc",line,ignore.case = TRUE)
-  replaced
-  
 }
 
 countWordOccurrenceByLine <- function(fileName,word,printMatch=FALSE){

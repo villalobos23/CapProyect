@@ -105,7 +105,7 @@ bigramTdm <- createTermDocumentMatrix(cleanSample,2,2,FALSE)
 trigramTdm <- createTermDocumentMatrix(cleanSample,3,3,FALSE)
 fgram <- createTermDocumentMatrix(cleanSample,4,4,FALSE)
 #with stopwords
-cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE)
+cleanSampleSW <- cleanCorpus(initialCorpus,removeSW = FALSE,removeApos = FALSE)
 cleanSampleSW[[1]]$content <- cleanSampleSW[[1]]$content[!is.na(cleanSampleSW[[1]]$content)]
 cleanSampleSW[[2]]$content <- cleanSampleSW[[2]]$content[!is.na(cleanSampleSW[[2]]$content)]
 cleanSampleSW[[3]]$content <- cleanSampleSW[[3]]$content[!is.na(cleanSampleSW[[3]]$content)]

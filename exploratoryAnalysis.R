@@ -20,7 +20,7 @@ cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE,removeApos=TRUE){
   #We have to remove this transformation
   removeApostrophe <- function(x) gsub("'","",x)
   removeAphView <- function(x) gsub("?","",x)
-  removeOtherChrs <- function(x) gsub("[^[:alnum:]///' ]", "", x) 
+  removeOtherChrs <- function(x) gsub("[^[:alnum:]///' ]", "", x)
   cCorpus <- tm_map(cCorpus, content_transformer(removeURL))
   if(removeApos){
    cCorpus <- tm_map(cCorpus, content_transformer(removeApostrophe))
@@ -31,6 +31,7 @@ cleanCorpus <- function(dCorpus,removeSW = TRUE,allLower=TRUE,removeApos=TRUE){
   cCorpus <- tm_map(cCorpus,removeNumbers)
   if(removeSW)
     cCorpus <- tm_map(cCorpus,removeWords, stopwords("english"))
+  
   cCorpus
 }
 
