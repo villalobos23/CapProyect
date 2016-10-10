@@ -1,20 +1,21 @@
-#loadTheFrequencies
 
 library(dplyr)
+library(data.table)
 library(stringi)
 if(!exists("addSentenceMarks", mode="function")||
    !exists("cleanSentence", mode="function")) source("utils.R")
 
 loadFreqs <- function(){
   if(!exists("freqMap")){
-    print("Loading Data")
+    #print("Loading Data")
     load("onePercentFreq.RData")
     freqMap <<- list()
-    freqMap[[1]] <<- unigramSW.freq
-    freqMap[[2]] <<- bigramSW.freq
-    freqMap[[3]] <<- trigramSW.freq
-    freqMap[[4]] <<- fgramSW.freq
+    freqMap[["unigram"]] <<- as.data.table(unigramSW.freq)
+    freqMap[["bigram"]] <<- as.data.table(bigramSW.freq)
+    freqMap[["trigram"]] <<- as.data.table(trigramSW.freq)
+    freqMap[["fgram"]] <<- as.data.table(fgramSW.freq)
   }
+  wrongs <<- 0
   freqMap
 }
 
@@ -26,7 +27,8 @@ getMostFrequentStart<- function(freqs,literal){
 }
 
 getMostFrequentEnd <- function(freqs, literal){
-  freqs[which(grepl(paste(literal,"$",sep=""),freqs$word)),]
+  regexMatches <- grepl(paste(literal,"$",sep=""),freqs$word)
+  freqs[which(regexMatches),]
 }
 
 getMostFrequent <- function(freqs, literal){
@@ -35,16 +37,26 @@ getMostFrequent <- function(freqs, literal){
 
 #This gives the relative frequency between an n-gram and its n-1gram based model
 # It divides the frequency of the ngram by the frequency of the n-1gram
-createRelativeFreq <- function(suffixFreqs,prefixFreqs,literal,partial=""){
-  augmentedLiteral <<- paste(paste("\\b",literal,sep=""),"\\b",sep="")
-  prefixes <- getMostFrequentEnd(prefixFreqs,augmentedLiteral)
+createRelativeFreq <- function(suffixFreqs,prefixFreqs,literal,partial="",amount=3){
+  prefixRegex <<- paste(paste("\\b",literal,sep=""),"\\b",sep="")
+  suffixRegex <<- ""
+  #print(paste("literal used for the prefix ",prefixRegex))
+  prefixes <<- getMostFrequentEnd(prefixFreqs,prefixRegex)
   if(partial != ""){
-    augmentedLiteral <- paste(augmentedLiteral,partial,sep=" ")
+    suffixRegex <<- paste(prefixRegex,partial,collapse=" ")
+  }else{
+    suffixRegex <<- prefixRegex
   }
-  possibilities <- getMostFrequentStart(suffixFreqs,augmentedLiteral)
-  possibilities$relFreq <- possibilities$freq/prefixes$freq
+  #print(paste("literal used for the suffix ",suffixRegex))
+  possibilities <<- getMostFrequentStart(suffixFreqs,suffixRegex)
+  if(length(prefixes$freq)==0 && length(possibilities$freq)> 0){
+    previousFreq <- sum(possibilities$freq) #add it to the df
+  }else{
+    previousFreq <- head(prefixes,1)$freq
+  }
+  possibilities$relFreq <- possibilities$freq/previousFreq
   possibilities <- arrange(possibilities,desc(relFreq))
-  possibilities <- head(select(possibilities,word,relFreq),3)
+  possibilities <- head(select(possibilities,word,relFreq),amount)
   possibilities$word <- stri_extract_last_words(possibilities$word)
   possibilities
 }
@@ -55,36 +67,33 @@ getSimpleFreq <- function(words.df,search){
   simpleResults
 }
 
-#Taken from 
-#http://stackoverflow.com/questions/2261079/how-to-trim-leading-and-trailing-whitespace-in-r
-# returns string w/o leading whitespace
-trim.leading <- function (x)  sub("^\\s+", "", x)
-# returns string w/o trailing whitespace
-trim.trailing <- function (x) sub("\\s+$", "", x)
-# returns string w/o leading or trailing whitespace
-trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-
 #Use the regular expression symbol \\W to match non-word characters, 
 #using + to indicate one or more in a row, along with gregexpr to find
 #all matches in a string. Words are the number of word separators plus 1
 createSuggestions <- function(literal){
   completeLiteral <-""
+  if(is.na(literal)){
+    literal <- " "
+  }
+  addOccurence <- FALSE
   if (grepl("[[:blank:]]$",literal)){#Espera recomendacion completa
-    print("complete word")
+    #print("complete word")
     wordCount <- sapply(gregexpr("\\W+", literal), length)
     completeLiteral <- trim(literal)
     partialFinalWord <- ""
+    addOccurence <- TRUE
   }else{#remover ultima palabra y predecir esa palabra que se esta escribiendo
     partialFinalWord <- stri_extract_last_words(literal)
-    print(paste("currently writing ",partialFinalWord,sep=""))
+    #print(paste("currently writing ",partialFinalWord,sep=""))
     #remove last word being typed
     completeLiteral <- gsub("\\s*\\w*$","",literal)
     wordCount <- sapply(gregexpr("\\W+", completeLiteral), length)
     completeLiteral <- trim.leading(completeLiteral)
-    print(completeLiteral)
   }
+  #print(paste("prefix to use",completeLiteral))
+  #print(paste("partial being used",partialFinalWord))
   #reduce literal
-  print(wordCount)
+  #print(paste("Word count of",wordCount))
   ngrams <- getNgrams(wordCount)
   ##This condition help us manage base case of backoff recursion
   if(wordCount == 1 && completeLiteral==""){
@@ -96,11 +105,16 @@ createSuggestions <- function(literal){
                      partialFinalWord)
   }
   
-  #add to corresponding ngram
-  addGrams(ngrams[[1]],literal)
+  if(addOccurence){
+    #add to corresponding ngram
+    #print("adding Ocurrence")
+    addNGramOcurrence(ngrams[[1]],trim(literal),wordCount)
+  }
   
   if(length(suggestionList$word) == 0){
     #backingOff with recursion
+    wrongs <<- wrongs+1
+    #print(paste("Backing off to ",wordCount-1))
     createSuggestions(gsub("^\\s*\\w*","",literal))
   }else{
     suggestionList
@@ -108,22 +122,50 @@ createSuggestions <- function(literal){
 }
 
 getNgrams <- function(amountOfWords){
-  result <<- list()
-  ngram <- amountOfWords + 1
-  result[[1]] <<- freqMap[[amountOfWords]]
-  result[[2]] <<- freqMap[[ngram]]
+  result <- list()
+  ngram <<- amountOfWords + 1
+  result[[1]] <- freqMap[[amountOfWords]]
+  result[[2]] <- freqMap[[ngram]]
   result
 }
 
-addGrams <- function(frame,input){
-  #http://stackoverflow.com/questions/5824173/replace-a-value-in-a-data-frame-based-on-a-conditional-if-statement-in-r
-  #http://stackoverflow.com/questions/19713130/updating-individual-values-not-rows-in-an-r-data-frame
+addNGramOcurrence <- function(frame,input,mapIndex,amount = 1){
+  index <- 0
+  if(mapIndex == 0){
+   index <- 1
+  }else{
+    index <- mapIndex
+  }  
+  regexString <- paste(paste("\\b",input,sep=""),"\\b$",sep="")  
+  newGram <- frame[which(grepl(regexString,word)),freq := freq+amount]
+  modifiedGram <- list()
+  modifiedGram[[getListName(mapIndex)]] <- newGram
+  freqMap <<- modifyList(freqMap,modifiedGram)
 }
+
+getListName <- function(index){
+  listName <- ""
+  if(index == 1 || index == 0){
+    listName <- "unigram"
+  }else if(index == 2){
+    listName <- "bigram"
+  }else if(index == 3){
+    listName <- "trigram"
+  }else{
+    listName <- "fgram"
+  }
+  listName
+}
+
 
 getNextWord <- function(textInput){
   createSuggestions(cleanSentence(textInput))
 }
 
+getUnknowns <- function(){
+  wrongs
+}
 
-
-
+#addedDT <- data.table(word=c("qqqq"),freq=c(1))
+#dtt <- as.data.table(freqMap[[1]])
+#dtt <- rbindlist(list(dtt,addedDT))

@@ -1,0 +1,53 @@
+NGram Prediction
+========================================================
+author: Luis J. Villalobos
+date: 09-10-2016
+
+```{r,echo=FALSE, print=FALSE}
+source("predictionModel.R")
+```
+
+Ngram Language model
+========================================================
+
+- By processing a certain amount of real world inputs we can create a model for text  prediction
+- In language models the n-gram language model is quite useful for performing such a task
+- With such a model we can compute the most likely word after a sequence has been introduced
+- The probability is computed using the frequency of the possible outcomes and the frequency of the entered text.
+
+Data Sources and preparation
+========================================================
+
+- The data sources used come from the HC Corpora dataset in the english language
+- for the purposes of the prototype a small subset of the possible prediction model was deployed
+- The dataset comes from blogs, newspapers and tweets that are stored in plain text files. 
+- There are other datasets that can be used to increase the coverage of any language model.
+After loading the sample words and sentences are cleaned, 
+- This means removing certain symbols, removing numbers, removing URL's and special symbols
+- Stopwords were not removed for the final model. 
+
+Algorithm and results
+========================================================
+
+- We replace punctuation for two tokens {sntcst} (Sentence Start) and {sntcnd} (Sentence end) in order to generate complete distributions
+- then ngrams up to 4 words were created
+- A simple backoff is used when prediction at a certain level is not achieved
+- The API delivers the 3 most likely words given the input text. 
+```{r}
+getNextWord("this is a ")
+```
+
+Future Work
+========================================================
+- There are methods available for adding unknown words that must be adapted to be used more easily with user interaction.
+- Add user settings and style for weights in the corpus used and their effect in relative frequency
+- Adding certain amount of words in the unigram structre (1-word ngram) could help reduce perplexity by adding an extra dataset that contains the most used words in English.
+
+
+
+Link to shiny apps
+========================================================
+A prototype that makes use of the model developed is on the following URL's
+- Try it out -> [here](https://villalobos23.shinyapps.io/Ngram_Prototype//)
+- Code available -> [here](https://github.com/villalobos23/CapProyect) 
+Happy Coding!
